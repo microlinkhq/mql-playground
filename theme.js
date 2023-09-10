@@ -1,6 +1,8 @@
 export const toPx = n => `${n}px`
 export const toRem = n => `${n}rem`
 
+export const borders = [0, '1px solid', '2px solid', '2px dashed']
+
 const inter =
   '"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI","Roboto","Oxygen","Ubuntu","Cantarell","Fira Sans","Droid Sans","Helvetica Neue",sans-serif'
 
@@ -29,7 +31,7 @@ const gray6 = '#868E96'
 const gray7 = '#495057'
 const gray8 = '#343A40'
 const gray9 = '#212529'
-const black = '#000'
+const black = '#000000'
 
 export const colors = {
   primary: '#067df7',
@@ -50,7 +52,33 @@ export const colors = {
   gray8,
   gray9,
   white,
-  black
+  black,
+  black95: 'rgba(0,0,0,0.95)',
+  black90: 'rgba(0,0,0,0.9)',
+  black80: 'rgba(0,0,0,0.8)',
+  black70: 'rgba(0,0,0,0.7)',
+  black60: 'rgba(0,0,0,0.6)',
+  black50: 'rgba(0,0,0,0.5)',
+  black40: 'rgba(0,0,0,0.4)',
+  black30: 'rgba(0,0,0,0.3)',
+  black20: 'rgba(0,0,0,0.2)',
+  black10: 'rgba(0,0,0,0.1)',
+  black05: 'rgba(0,0,0,0.05)',
+  black025: 'rgba(0,0,0,0.025)',
+  black0125: 'rgba(0,0,0,0.0125)',
+  white95: 'rgba(255,255,255,0.95)',
+  white90: 'rgba(255,255,255,0.9)',
+  white80: 'rgba(255,255,255,0.8)',
+  white70: 'rgba(255,255,255,0.7)',
+  white60: 'rgba(255,255,255,0.6)',
+  white50: 'rgba(255,255,255,0.5)',
+  white40: 'rgba(255,255,255,0.4)',
+  white30: 'rgba(255,255,255,0.3)',
+  white20: 'rgba(255,255,255,0.2)',
+  white10: 'rgba(255,255,255,0.1)',
+  white05: 'rgba(255,255,255,0.05)',
+  white025: 'rgba(255,255,255,0.025)',
+  white0125: 'rgba(255,255,255,0.0125)'
 }
 
 export const maxWidths = [1, 2, 4, 8, 16, 32, 48, 64, 96].map(toRem)
@@ -58,7 +86,8 @@ export const maxWidths = [1, 2, 4, 8, 16, 32, 48, 64, 96].map(toRem)
 export const fonts = {
   heading: inter,
   body: inter,
-  monospace: 'monospace'
+  monospace:
+    '"Operator Mono", "Fira Code", "SF Mono", "Roboto Mono", Menlo, monospace'
 }
 
 export const letterSpacings = {
@@ -94,6 +123,7 @@ export default {
   fonts,
   space,
   maxWidths,
+  borders,
   fontWeights,
   breakpoints,
   layout,

@@ -1,13 +1,35 @@
 'use client'
 
+import { SyntaxHighlight } from '@/components/syntax-highlight'
 import { MonacoEditor } from '@/components/monaco-editor'
-import { Paragraph, Box, Flex } from 'theme-ui'
+import { Text, Paragraph, Box, Flex } from 'theme-ui'
+import { Spinner } from '@/components/spinner'
 import { Choose } from '@/components/choose'
+import { Dot } from '@/components/dot'
 import { If } from '@/components/if'
 import Tabs from '@/components/tabs'
+import { colors } from '@/theme'
 import { useState } from 'react'
 
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+
+const Kbd = props => (
+  <Text
+    as='kbd'
+    sx={{
+      font: 'monospace',
+      borderRadius: 3,
+      border: 1,
+      borderColor: 'gray8',
+      display: 'inline-block',
+      py: 1,
+      px: 2,
+      mx: 1,
+      boxShadow: `inset 0 -1px 0 ${colors.gray8}`
+    }}
+    {...props}
+  />
+)
 
 // const initialCode = `import mql from 'https://esm.sh/@microlink/mql'
 // console.log('ola')
@@ -83,21 +105,18 @@ export default function Home () {
     console.warn = warn
     console.error = error
 
-    console.log(value)
     setData({ value, logs })
     setStatus(status)
   }
 
-  const resHeaders = data
-    ? Object.fromEntries(data.value.response.headers.entries())
-    : {}
+  const { response, ...payload } = data?.value ?? {}
 
   return (
     <Flex
       as='main'
       sx={{
         height: '100vh',
-        flexDirection: 'row'
+        color: 'black'
       }}
     >
       <MonacoEditor onEvaluate={onEvaluate} initialCode={initialCode} />
@@ -105,26 +124,51 @@ export default function Home () {
         data-name='render'
         sx={{
           flex: 1,
-          height: '100vh',
           bg: 'white',
           borderLeft: '1px solid',
           borderColor: 'gray2',
-          color: 'black',
           flexDirection: 'column'
         }}
       >
-        <Box data-name='render-output' sx={{ flex: 1, overflow: 'auto' }}>
+        <Box
+          data-name='render-output'
+          sx={{ flex: 1, overflow: 'auto', py: 2, px: 3 }}
+        >
           <Choose>
             <Choose.When
+              condition={status === 'idle'}
+              render={() => (
+                <Flex
+                  sx={{
+                    height: '100%',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  Press <Kbd>Command</Kbd> + <Kbd>Enter</Kbd> to run
+                </Flex>
+              )}
+            />
+            <Choose.When
               condition={status === 'running'}
-              render={() => 'PLEASE WAIT...'}
+              render={() => (
+                <Flex
+                  sx={{
+                    height: '100%',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <Spinner sx={{ zoom: 2 }} />
+                </Flex>
+              )}
             />
             <Choose.When
               condition={status === 'success'}
               render={() => (
-                <pre>
-                  <code>{JSON.stringify(data.value, null, 2)}</code>
-                </pre>
+                <SyntaxHighlight>
+                  {JSON.stringify(payload, null, 2)}
+                </SyntaxHighlight>
               )}
             />
           </Choose>
@@ -133,22 +177,47 @@ export default function Home () {
           data-name='render-console'
           sx={{
             flex: 1,
+            overflow: 'auto',
             borderTop: '1px solid',
-            borderColor: 'gray2',
-            verflow: 'auto'
+            borderColor: 'gray2'
           }}
         >
           <Tabs>
             <Tabs.TabList>
-              <Tabs.Tab key='info'>info</Tabs.Tab>
-              <Tabs.Tab key='logs'>logs</Tabs.Tab>
+              <Tabs.Tab key='http'>http</Tabs.Tab>
+              <Tabs.Tab key='log'>logs</Tabs.Tab>
             </Tabs.TabList>
-            <Tabs.TabPanel key='info'>
-              <div>{data?.value.status}</div>
-              <div>{data?.value.statusCode}</div>
-              <pre>
-                <code>{JSON.stringify(resHeaders, null, 2)}</code>
-              </pre>
+            <Tabs.TabPanel key='http'>
+              <If
+                condition={!!data}
+                render={() => (
+                  <Box sx={{ py: 2, px: 3 }}>
+                    <Box sx={{ pt: 2 }}>
+                      <Dot status={data.value.status} sx={{ mr: 2 }} />
+                      <Text
+                        sx={{
+                          fontSize: 1,
+                          textTransform: 'uppercase'
+                        }}
+                      >
+                        {data.value.statusCode === 200 ? 'OK' : 'OH NO'}
+                      </Text>
+                      <Text sx={{ fontSize: 1, pl: 1 }}>
+                        ({data.value.statusCode})
+                      </Text>
+                    </Box>
+                    <SyntaxHighlight sx={{ pt: 2 }}>
+                      {JSON.stringify(
+                        Object.fromEntries(
+                          data.value.response.headers.entries()
+                        ),
+                        null,
+                        2
+                      )}
+                    </SyntaxHighlight>
+                  </Box>
+                )}
+              />
             </Tabs.TabPanel>
             <Tabs.TabPanel key='logs'>
               <If

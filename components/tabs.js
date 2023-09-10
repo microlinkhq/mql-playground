@@ -1,14 +1,7 @@
 import { Tab, Tabs as MyTabs, TabList, TabPanel } from 'react-tabs'
 import { css, Global } from '@emotion/react'
 
-import {
-  colors,
-  fonts,
-  fontSizes,
-  fontWeights,
-  letterSpacings,
-  transitions
-} from '@/theme'
+import { colors, fontSizes } from '@/theme'
 
 const globalStyles = (
   <Global
@@ -18,27 +11,37 @@ const globalStyles = (
       }
 
       .react-tabs__tab-list {
-        border-bottom: 1px solid #aaa;
-        margin: 0 0 10px;
+        border-bottom: 1px solid ${colors.gray2};
+        margin: 0;
         padding: 0;
       }
 
       .react-tabs__tab {
+        text-transform: uppercase;
+        font-size: ${fontSizes[1]};
         display: inline-block;
         border: 1px solid transparent;
         border-bottom: none;
-        bottom: -1px;
         position: relative;
         list-style: none;
         padding: 6px 12px;
         cursor: pointer;
+        color: ${colors.gray6};
       }
 
       .react-tabs__tab--selected {
-        background: #fff;
-        border-color: #aaa;
-        color: black;
-        border-radius: 5px 5px 0 0;
+        color: ${colors.black};
+
+        &::before {
+          content: '';
+          display: block;
+          position: absolute;
+          height: 0;
+          left: 9px;
+          right: 9px;
+          bottom: 0;
+          border-bottom: 2px solid;
+        }
       }
 
       .react-tabs__tab--disabled {
