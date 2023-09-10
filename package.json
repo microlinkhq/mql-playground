@@ -9,8 +9,18 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "next": "13.4.19",
+    "@emotion/react": "~11.11.1",
+    "@microlink/mql": "~0.11.2",
+    "@monaco-editor/react": "~4.5.2",
+    "next": "canary",
+    "raw-loader": "~4.0.2",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "react-tabs": "~6.0.2",
+    "styled-components": "6",
+    "theme-ui": "~0.16.1"
+  },
+  "devDependencies": {
+    "standard": "latest"
   }
 }

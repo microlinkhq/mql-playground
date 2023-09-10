@@ -1,95 +1,184 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+'use client'
 
-export default function Home() {
+import { MonacoEditor } from '@/components/monaco-editor'
+import { Paragraph, Box, Flex } from 'theme-ui'
+import { Choose } from '@/components/choose'
+import { If } from '@/components/if'
+import Tabs from '@/components/tabs'
+import { useState } from 'react'
+
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+
+// const initialCode = `import mql from 'https://esm.sh/@microlink/mql'
+// console.log('ola')
+// export default mql('https://example.com')`
+
+const initialCode = `import mql from 'https://esm.sh/@microlink/mql'
+
+console.log('ola')
+
+export default mql('https://example.com')`
+
+export default function Home () {
+  const [data, setData] = useState(null)
+  const [status, setStatus] = useState('idle')
+
+  async function onEvaluate (code) {
+    setStatus('running')
+
+    const script = document.createElement('script')
+
+    const dataUri = `data:text/javascript;base64,${btoa(code)}`
+    script.type = 'module'
+
+    window.__result = null
+
+    const log = console.log.bind(console)
+    const debug = console.debug.bind(console)
+    const info = console.info.bind(console)
+    const warn = console.warn.bind(console)
+    const error = console.error.bind(console)
+
+    const logs = Object.create(null)
+
+    for (const method of ['log', 'debug', 'info', 'warn', 'error']) {
+      console[method] = function (...args) {
+        const input = args.join(' ')
+        logs[method] = Array.isArray(logs[method])
+          ? logs[method].push(input)
+          : [input]
+      }
+    }
+
+    const string = `import('${dataUri}').then(async mod => {
+      let status = undefined
+      let value = undefined
+      try {
+        const promise = typeof mod.default === 'function' ? mod.default() : Promise.resolve(mod.default)
+        value = await promise
+        status = 'success'
+      } catch (error) {
+        value = error
+        status = 'error'
+      } finally {
+        window.__result = { status, value }
+      }
+    })`
+
+    script.textContent = string
+    document.body.appendChild(script)
+
+    const getResult = async () => {
+      if (window.__result !== null) return Promise.resolve(window.__result)
+      await delay(50)
+      return getResult()
+    }
+
+    const { status, value } = await getResult()
+    document.body.removeChild(script)
+
+    console.log = log
+    console.debug = debug
+    console.info = info
+    console.warn = warn
+    console.error = error
+
+    console.log(value)
+    setData({ value, logs })
+    setStatus(status)
+  }
+
+  const resHeaders = data
+    ? Object.fromEntries(data.value.response.headers.entries())
+    : {}
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.js</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
+    <Flex
+      as='main'
+      sx={{
+        height: '100vh',
+        flexDirection: 'row'
+      }}
+    >
+      <MonacoEditor onEvaluate={onEvaluate} initialCode={initialCode} />
+      <Flex
+        data-name='render'
+        sx={{
+          flex: 1,
+          height: '100vh',
+          bg: 'white',
+          borderLeft: '1px solid',
+          borderColor: 'gray2',
+          color: 'black',
+          flexDirection: 'column'
+        }}
+      >
+        <Box data-name='render-output' sx={{ flex: 1, overflow: 'auto' }}>
+          <Choose>
+            <Choose.When
+              condition={status === 'running'}
+              render={() => 'PLEASE WAIT...'}
             />
-          </a>
-        </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
+            <Choose.When
+              condition={status === 'success'}
+              render={() => (
+                <pre>
+                  <code>{JSON.stringify(data.value, null, 2)}</code>
+                </pre>
+              )}
+            />
+          </Choose>
+        </Box>
+        <Box
+          data-name='render-console'
+          sx={{
+            flex: 1,
+            borderTop: '1px solid',
+            borderColor: 'gray2',
+            verflow: 'auto'
+          }}
         >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore the Next.js 13 playground.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+          <Tabs>
+            <Tabs.TabList>
+              <Tabs.Tab key='info'>info</Tabs.Tab>
+              <Tabs.Tab key='logs'>logs</Tabs.Tab>
+            </Tabs.TabList>
+            <Tabs.TabPanel key='info'>
+              <div>{data?.value.status}</div>
+              <div>{data?.value.statusCode}</div>
+              <pre>
+                <code>{JSON.stringify(resHeaders, null, 2)}</code>
+              </pre>
+            </Tabs.TabPanel>
+            <Tabs.TabPanel key='logs'>
+              <If
+                condition={
+                  data && data.logs && Object.keys(data.logs).length > 0
+                }
+                render={() =>
+                  Object.keys(data?.logs ?? {}).map(method => {
+                    const color = 'blue'
+                    return data.logs[method].map(log => (
+                      <Paragraph
+                        sx={{
+                          color,
+                          py: 2,
+                          px: 3,
+                          borderBottom: '1px solid',
+                          borderColor: 'gray1'
+                        }}
+                        key={`${method}_${log}`}
+                      >
+                        {method}: {log}
+                      </Paragraph>
+                    ))
+                  })
+                }
+              />
+            </Tabs.TabPanel>
+          </Tabs>
+        </Box>
+      </Flex>
+    </Flex>
   )
 }
