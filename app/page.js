@@ -241,8 +241,7 @@ export default function Home () {
                         {method}: {log}
                       </Paragraph>
                     ))
-                  })
-                }
+                  })}
               />
             </Tabs.TabPanel>
           </Tabs>

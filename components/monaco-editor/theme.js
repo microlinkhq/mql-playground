@@ -1,6 +1,6 @@
 import { colors } from '@/theme'
 
-export default {
+const theme = {
   base: 'vs',
   inherit: true,
   rules: [
@@ -71,3 +71,5 @@ export default {
     'editor.selectionBackground': colors.gray3
   }
 }
+
+export default theme

@@ -1,5 +1,4 @@
 import { Box } from 'theme-ui'
-import { colors } from '@/theme'
 
 const STATUS = {
   success: '#50e3c2',
