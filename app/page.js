@@ -2,9 +2,11 @@
 
 import { SyntaxHighlight } from '@/components/syntax-highlight'
 import { MonacoEditor } from '@/components/monaco-editor'
-import { Text, Paragraph, Box, Flex } from 'theme-ui'
+import { Console } from '@/components/console'
 import { Spinner } from '@/components/spinner'
+import { withScript } from '@/lib/with-script'
 import { Choose } from '@/components/choose'
+import { Text, Box, Flex } from 'theme-ui'
 import { Dot } from '@/components/dot'
 import { If } from '@/components/if'
 import Tabs from '@/components/tabs'
@@ -31,85 +33,42 @@ const Kbd = props => (
   />
 )
 
-// const initialCode = `import mql from 'https://esm.sh/@microlink/mql'
-// console.log('ola')
-// export default mql('https://example.com')`
+const initialCode = `/**
+*
+* Welcome to MQL Playground!
+*
+* - Write interactive code.
+* - See result on the right panel
+* - Copy and paste the unique URL generated
+*
+* Learn more at https://microlink.io/mql
+*/
 
-const initialCode = `import mql from 'https://esm.sh/@microlink/mql'
+import mql from 'https://esm.sh/@microlink/mql'
 
 console.log('ola')
+console.warn('ola')
+console.warn('ola2')
+console.error('ola')
 
 export default mql('https://example.com')`
 
 export default function Home () {
-  const [data, setData] = useState(null)
+  const [value, setValue] = useState(null)
+  const [logs, setLogs] = useState(null)
   const [status, setStatus] = useState('idle')
 
   async function onEvaluate (code) {
     setStatus('running')
-
-    const script = document.createElement('script')
-
-    const dataUri = `data:text/javascript;base64,${btoa(code)}`
-    script.type = 'module'
-
-    window.__result = null
-
-    const log = console.log.bind(console)
-    const debug = console.debug.bind(console)
-    const info = console.info.bind(console)
-    const warn = console.warn.bind(console)
-    const error = console.error.bind(console)
-
-    const logs = Object.create(null)
-
-    for (const method of ['log', 'debug', 'info', 'warn', 'error']) {
-      console[method] = function (...args) {
-        const input = args.join(' ')
-        logs[method] = Array.isArray(logs[method])
-          ? logs[method].push(input)
-          : [input]
-      }
-    }
-
-    const string = `import('${dataUri}').then(async mod => {
-      let status = undefined
-      let value = undefined
-      try {
-        const promise = typeof mod.default === 'function' ? mod.default() : Promise.resolve(mod.default)
-        value = await promise
-        status = 'success'
-      } catch (error) {
-        value = error
-        status = 'error'
-      } finally {
-        window.__result = { status, value }
-      }
-    })`
-
-    script.textContent = string
-    document.body.appendChild(script)
-
-    const getResult = async () => {
-      if (window.__result !== null) return Promise.resolve(window.__result)
-      await delay(50)
-      return getResult()
-    }
-
-    const { status, value } = await getResult()
-    document.body.removeChild(script)
-
-    console.log = log
-    console.debug = debug
-    console.info = info
-    console.warn = warn
-    console.error = error
-
-    setData({ value, logs })
+    const { status, value, logs } = await withScript(code)
+    setValue(value)
+    setLogs(logs)
     setStatus(status)
   }
 
-  const { response, ...payload } = data?.value ?? {}
+  const { response, ...payload } = value ?? {}
+
+  const countLogs = Object.keys(logs ?? {}).reduce((acc, method) => acc + logs[method].length, 0)
 
   return (
     <Flex
@@ -119,21 +78,20 @@ export default function Home () {
         color: 'black'
       }}
     >
-      <MonacoEditor onEvaluate={onEvaluate} initialCode={initialCode} />
+      <Flex data-name='editor' sx={{ flex: 1, p: 3 }}>
+        <MonacoEditor onEvaluate={onEvaluate} initialCode={initialCode} />
+      </Flex>
       <Flex
         data-name='render'
         sx={{
           flex: 1,
-          bg: 'white',
+          background: 'white',
           borderLeft: '1px solid',
           borderColor: 'gray2',
           flexDirection: 'column'
         }}
       >
-        <Box
-          data-name='render-output'
-          sx={{ flex: 1, overflow: 'auto', py: 2, px: 3 }}
-        >
+        <Box data-name='render-output' sx={{ flex: 1, overflow: 'auto' }}>
           <Choose>
             <Choose.When
               condition={status === 'idle'}
@@ -145,7 +103,7 @@ export default function Home () {
                     justifyContent: 'center'
                   }}
                 >
-                  Press <Kbd>Command</Kbd> + <Kbd>Enter</Kbd> to run
+                  Press <Kbd>⌘</Kbd> + <Kbd>↩</Kbd> to run
                 </Flex>
               )}
             />
@@ -159,93 +117,66 @@ export default function Home () {
                     justifyContent: 'center'
                   }}
                 >
-                  <Spinner sx={{ zoom: 2 }} />
+                  <Spinner sx={{ zoom: 2.5 }} />
                 </Flex>
               )}
             />
             <Choose.When
               condition={status === 'success'}
               render={() => (
-                <SyntaxHighlight>
+                <SyntaxHighlight sx={{ p: 3 }}>
                   {JSON.stringify(payload, null, 2)}
                 </SyntaxHighlight>
               )}
             />
           </Choose>
         </Box>
-        <Box
-          data-name='render-console'
-          sx={{
-            flex: 1,
-            overflow: 'auto',
-            borderTop: '1px solid',
-            borderColor: 'gray2'
-          }}
-        >
-          <Tabs>
-            <Tabs.TabList>
-              <Tabs.Tab key='http'>http</Tabs.Tab>
-              <Tabs.Tab key='log'>logs</Tabs.Tab>
-            </Tabs.TabList>
-            <Tabs.TabPanel key='http'>
-              <If
-                condition={!!data}
-                render={() => (
-                  <Box sx={{ py: 2, px: 3 }}>
-                    <Box sx={{ pt: 2 }}>
-                      <Dot status={data.value.status} sx={{ mr: 2 }} />
-                      <Text
-                        sx={{
-                          fontSize: 1,
-                          textTransform: 'uppercase'
-                        }}
-                      >
-                        {data.value.statusCode === 200 ? 'OK' : 'OH NO'}
-                      </Text>
-                      <Text sx={{ fontSize: 1, pl: 1 }}>
-                        ({data.value.statusCode})
-                      </Text>
-                    </Box>
-                    <SyntaxHighlight sx={{ pt: 2 }}>
-                      {JSON.stringify(
-                        Object.fromEntries(
-                          data.value.response.headers.entries()
-                        ),
-                        null,
-                        2
-                      )}
-                    </SyntaxHighlight>
-                  </Box>
-                )}
-              />
-            </Tabs.TabPanel>
-            <Tabs.TabPanel key='logs'>
-              <If
-                condition={
-                  data && data.logs && Object.keys(data.logs).length > 0
-                }
-                render={() =>
-                  Object.keys(data?.logs ?? {}).map(method => {
-                    const color = 'blue'
-                    return data.logs[method].map(log => (
-                      <Paragraph
-                        sx={{
-                          color,
-                          py: 2,
-                          px: 3,
-                          borderBottom: '1px solid',
-                          borderColor: 'gray1'
-                        }}
-                        key={`${method}_${log}`}
-                      >
-                        {method}: {log}
-                      </Paragraph>
-                    ))
-                  })}
-              />
-            </Tabs.TabPanel>
-          </Tabs>
-        </Box>
+
+        <If
+          condition={status === 'success'}
+          render={() => (
+            <Box
+              data-name='render-console'
+              sx={{
+                flex: 1,
+                overflow: 'auto',
+                borderTop: '1px solid',
+                borderColor: 'gray2'
+              }}
+            >
+              <Tabs>
+                <Tabs.TabList>
+                  <Tabs.Tab>http <Dot status={value.status} sx={{ ml: 2 }} /></Tabs.Tab>
+                  <Tabs.Tab>logs ({countLogs})</Tabs.Tab>
+                </Tabs.TabList>
+                <Tabs.TabPanel>
+                  <If
+                    condition={!!value}
+                    render={() => (
+                      <SyntaxHighlight sx={{ p: 3 }}>
+                        {JSON.stringify(
+                          Object.fromEntries(
+                            Array.from(value.response.headers).sort(([a], [b]) => a.localeCompare(b))
+                          ),
+                          null,
+                          2
+                        )}
+                      </SyntaxHighlight>
+                    )}
+                  />
+                </Tabs.TabPanel>
+                <Tabs.TabPanel>
+                  <If
+                    condition={logs && Object.keys(logs).length > 0}
+                    render={() => Object.keys(logs ?? {}).map(method => logs[method].map(log => (
+                      <Console key={`${method}_${log}`} type={method}>{log}</Console>
+                    )))}
+                  />
+                </Tabs.TabPanel>
+              </Tabs>
+            </Box>
+          )}
+        />
       </Flex>
     </Flex>
   )

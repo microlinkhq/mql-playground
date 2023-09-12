@@ -2,7 +2,10 @@ import { Inter } from 'next/font/google'
 
 import Providers from '../providers'
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap'
+})
 
 export const metadata = {
   title: 'Microlink Query Language (MQL)',
@@ -11,8 +14,8 @@ export const metadata = {
 
 export default function RootLayout ({ children }) {
   return (
-    <html lang='en'>
-      <body className={inter.className} style={{ margin: 0 }}>
+    <html lang='en' className={inter.className} style={{overflow: 'hidden'}}>
+      <body style={{ margin: 0 }}>
         <Providers>{children}</Providers>
       </body>
     </html>

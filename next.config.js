@@ -4,6 +4,7 @@
  * https://dev.to/rashidshamloo/using-styled-components-with-nextjs-v13-typescript-2l6m
  */
 const nextConfig = {
+  output: 'export',
   reactStrictMode: true,
   compiler: {
     emotion: true

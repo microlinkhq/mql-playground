@@ -1,6 +1,5 @@
 import Monaco from '@monaco-editor/react'
 import { fontSizes } from '@/theme'
-import { Flex } from 'theme-ui'
 import { useRef } from 'react'
 
 import theme from './theme'
@@ -63,36 +62,31 @@ export const MonacoEditor = ({ initialCode, onEvaluate }) => {
   const editorRef = useRef(null)
 
   return (
-    <Flex data-name='editor' sx={{ flex: 1, p: 3 }}>
-      <Monaco
-        defaultLanguage='javascript'
-        defaultValue={initialCode}
-        // onChange={value => {
-        //   const searchParams = new URLSearchParams(window.location.search)
-        //   searchParams.set('code', marshall(value))
-        //   replaceUrl({ searchParams })
-        // }}
-        theme='custom'
-        // key={activePath}
-        options={editorOptions}
-        onMount={(editor, monaco) => {
-          editorRef.current = editor
+    <Monaco
+      defaultLanguage='javascript'
+      defaultValue={initialCode}
+      // onChange={value => {
+      //   const searchParams = new URLSearchParams(window.location.search)
+      //   searchParams.set('code', marshall(value))
+      //   replaceUrl({ searchParams })
+      // }}
+      theme='custom'
+      // key={activePath}
+      options={editorOptions}
+      onMount={(editor, monaco) => {
+        editorRef.current = editor
 
-          editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
-            // editor.setValue(prettier.js(editor.getValue()))
-            // toast.success('code formatted')
-          })
-          editor.addCommand(
-            monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
-            () => {
-              const userCode = editorRef.current.getValue()
-              onEvaluate(userCode)
-              // toast.success('running the code...')
-            }
-          )
-        }}
-        beforeMount={monacoSetup}
-      />
-    </Flex>
+        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
+          // editor.setValue(prettier.js(editor.getValue()))
+          // toast.success('code formatted')
+        })
+        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+          const userCode = editorRef.current.getValue()
+          onEvaluate(userCode)
+          // toast.success('running the code...')
+        })
+      }}
+      beforeMount={monacoSetup}
+    />
   )
 }

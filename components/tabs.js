@@ -1,7 +1,6 @@
 import { Tab, Tabs as MyTabs, TabList, TabPanel } from 'react-tabs'
+import { space, colors, fontSizes } from '@/theme'
 import { css, Global } from '@emotion/react'
-
-import { colors, fontSizes } from '@/theme'
 
 const globalStyles = (
   <Global
@@ -24,7 +23,7 @@ const globalStyles = (
         border-bottom: none;
         position: relative;
         list-style: none;
-        padding: 6px 12px;
+        padding: ${space[2]} ${space[3]};
         cursor: pointer;
         color: ${colors.gray6};
       }
@@ -37,8 +36,8 @@ const globalStyles = (
           display: block;
           position: absolute;
           height: 0;
-          left: 9px;
-          right: 9px;
+          left: -1px;
+          right: -1px;
           bottom: 0;
           border-bottom: 2px solid;
         }
@@ -51,16 +50,6 @@ const globalStyles = (
 
       .react-tabs__tab:focus {
         outline: none;
-      }
-
-      .react-tabs__tab:focus:after {
-        content: '';
-        position: absolute;
-        height: 5px;
-        left: -4px;
-        right: -4px;
-        bottom: -5px;
-        background: #fff;
       }
 
       .react-tabs__tab-panel {

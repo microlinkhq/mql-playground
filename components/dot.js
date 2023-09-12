@@ -15,7 +15,7 @@ export const Dot = ({ status, sx }) => {
         width: '8px',
         height: '8px',
         borderRadius: 3,
-        bg: color,
+        background: color,
         boxShadow: `0 0 12px 0 ${color}`,
         ...sx
       }}
